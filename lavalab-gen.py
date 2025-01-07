@@ -103,7 +103,7 @@ def main():
     workers = yaml.safe_load(fp)
     fp.close()
 
-    os.mkdir("output")
+    os.mkdir(outputdir)
 
     if "masters" not in workers:
         masters = {}
@@ -135,9 +135,10 @@ def main():
             host = "local"
         else:
             host = master["host"]
-        workerdir = "output/%s/%s" % (host, name)
-        os.mkdir("output/%s" % host)
-        shutil.copy("deploy.sh", "output/%s/" % host)
+        hostdir = "%s/%s" % (outputdir, host)
+        workerdir = "%s/%s" % (hostdir, name)
+        os.mkdir(hostdir)
+        shutil.copy("deploy.sh", hostdir)
         if not "webinterface_port" in master:
             webinterface_port = "10080"
         else:
@@ -149,7 +150,7 @@ def main():
         dockcomp = {}
         dockcomp["version"] = "2.4"
         dockcomp["services"] = {}
-        dockcomposeymlpath = "output/%s/docker-compose.yml" % host
+        dockcomposeymlpath = "%s/docker-compose.yml" % hostdir
         dockcomp["services"][name] = {}
         dockcomp["services"][name]["hostname"] = name
         dockcomp["services"][name]["ports"] = [ listen_address + ":" + str(webinterface_port) + ":80"]
@@ -442,11 +443,12 @@ def main():
             host = slave["host"]
         if slave.get("default_slave") and slave["default_slave"]:
              default_slave = name
-        workerdir = "output/%s/%s" % (host, name)
-        dockcomposeymlpath = "output/%s/docker-compose.yml" % host
-        if not os.path.isdir("output/%s" % host):
-            os.mkdir("output/%s" % host)
-            shutil.copy("deploy.sh", "output/%s/" % host)
+        hostdir = "%s/%s" % (outputdir, host)
+        workerdir = "%s/%s" % (hostdir, name)
+        dockcomposeymlpath = "%s/docker-compose.yml" % hostdir
+        if not os.path.isdir(hostdir):
+            os.mkdir(hostdir)
+            shutil.copy("deploy.sh", hostdir)
             dockcomp = {}
             dockcomp["version"] = "2.0"
             dockcomp["services"] = {}
@@ -529,7 +531,7 @@ def main():
             if not slave_master:
                 print("Cannot set env without master")
                 sys.exit(1)
-            envdir = "output/%s/%s/env/%s" % (slave_master["host"], slave_master["name"], name)
+            envdir = "%s/%s/%s/env/%s" % (outputdir, slave_master["host"], slave_master["name"], name)
             os.mkdir(envdir)
             fenv = open("%s/env.yaml" % envdir, 'w')
             fenv.write("overrides:\n")
@@ -586,7 +588,7 @@ def main():
             dockcomp["services"]["healthcheck"]["build"]["context"] = "healthcheck"
             if remote_master in worker and "build_args" in worker[remote_master]:
                 dockcomp["services"]["healthcheck"]["build"]["args"] = worker[remote_master]['build_args']
-            shutil.copytree("healthcheck", "output/%s/healthcheck" % host)
+            shutil.copytree("healthcheck", "%s/healthcheck" % hostdir)
         if "extra_actions" in worker:
             fp = open("%s/scripts/extra_actions" % workerdir, "w")
             for eaction in worker["extra_actions"]:
@@ -596,8 +598,9 @@ def main():
             os.chmod("%s/scripts/extra_actions" % workerdir, 0o755)
 
         if "devices" in worker:
-            if not os.path.isdir("output/%s/udev" % host):
-                os.mkdir("output/%s/udev" % host)
+            udevdir = "%s/udev" % hostdir
+            if not os.path.isdir(udevdir):
+                os.mkdir(udevdir)
             for udev_dev in worker["devices"]:
                 udev_line = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="%04x", ATTRS{idProduct}=="%04x",' % (udev_dev["idvendor"], udev_dev["idproduct"])
                 if "serial" in udev_dev:
@@ -605,7 +608,7 @@ def main():
                 if "devpath" in udev_dev:
                     udev_line += 'ATTRS{devpath}=="%s", ' % udev_dev["devpath"]
                 udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % udev_dev["name"]
-                fudev = open("output/%s/udev/99-lavaworker-udev.rules" % host, "a")
+                fudev = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
                 fudev.write(udev_line)
                 fudev.close()
                 if not "bind_dev" in slave or not slave["bind_dev"]:
@@ -690,8 +693,9 @@ def main():
             host = "local"
         else:
             host = slave["host"]
-        workerdir = "output/%s/%s" % (host, worker_name)
-        dockcomposeymlpath = "output/%s/docker-compose.yml" % host
+        hostdir = "%s/%s" % (outputdir, host)
+        workerdir = "%s/%s" % (hostdir, worker_name)
+        dockcomposeymlpath = "%s/docker-compose.yml" % hostdir
         fp = open(dockcomposeymlpath, "r")
         dockcomp = yaml.safe_load(fp)
         fp.close()
@@ -738,9 +742,10 @@ def main():
                 for env in uart["env"]:
                     udev_line += 'ENV{%s}=="%s",' % (env, uart["env"][env])
             udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % board_name
-            if not os.path.isdir("output/%s/udev" % host):
-                os.mkdir("output/%s/udev" % host)
-            fp = open("output/%s/udev/99-lavaworker-udev.rules" % host, "a")
+            udevdir = "%s/udev" % hostdir
+            if not os.path.isdir(udevdir):
+                os.mkdir(udevdir)
+            fp = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
             fp.write(udev_line)
             fp.close()
             if not "bind_dev" in slave or not slave["bind_dev"]:
@@ -760,7 +765,7 @@ def main():
                 else:
                     worker_ser2net = worker_name
                     telnet_host = "127.0.0.1"
-                ser2netdir = "output/%s/%s" % (host, worker_ser2net)
+                ser2netdir = "%s/%s" % (hostdir, worker_ser2net)
                 if not os.path.isdir(ser2netdir):
                     os.mkdir(ser2netdir)
                 if (not "bind_dev" in slave or not slave["bind_dev"]) and worker_ser2net == worker_name:
@@ -773,7 +778,7 @@ def main():
                 if "interfacenum" in uart:
                     udev_line += 'ENV{ID_USB_INTERFACE_NUM}=="%s", ' % board["uart"]["interfacenum"]
                 udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % board_name
-                udevdir = "output/%s/%s/udev" % (host, worker_ser2net)
+                udevdir = "%s/%s/udev" % (hostdir, worker_ser2net)
                 if not os.path.isdir(udevdir):
                     os.mkdir(udevdir)
                 fp = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
@@ -881,7 +886,8 @@ def main():
         if not expose_ser2net:
             continue
         print("Add ser2net ports for %s (%s) %s-%s" % (slave_name, host, ser2net_port_start, ser2net_ports[slave_name]))
-        dockcomposeymlpath = "output/%s/docker-compose.yml" % host
+        hostdir = "%s/%s" % (outputdir, host)
+        dockcomposeymlpath = "%s/docker-compose.yml" % hostdir
         fp = open(dockcomposeymlpath, "r")
         dockcomp = yaml.safe_load(fp)
         fp.close()
@@ -890,11 +896,23 @@ def main():
         with open(dockcomposeymlpath, 'w') as f:
             yaml.dump(dockcomp, f)
 
+outputdir = "output"
 if len(sys.argv) > 1:
     if sys.argv[1] == '-h' or sys.argv[1] == '--help':
         usage()
         sys.exit(0)
-    boards_yaml = sys.argv[1]
+    n = 1
+    if sys.argv[1] == '-o':
+        if len(sys.argv) < 3:
+            usage()
+            sys.exit(1)
+        n += 1
+        outputdir = sys.argv[n]
+        n += 1
+    if n >= len(sys.argv):
+        usage()
+        sys.exit(1)
+    boards_yaml = sys.argv[n]
 
 if __name__ == "__main__":
     main()
