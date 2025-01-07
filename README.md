@@ -350,6 +350,8 @@ boards:
       ser2net_options:	(optional) A list of ser2net options to add
         - option1
         - option2
+      env:
+        envname: value  (optional) add an udev env filter ENV{envname}=="value"
     connection_command: A command to be ran for getting a serial console
     pdu_generic:
       hard_reset_command: commandline to reset the board

@@ -707,7 +707,7 @@ def main():
         if devicetype == "qemu" and not use_kvm:
             device_line += "{% set no_kvm = True %}\n"
         if "uart" in board:
-            keywords_uart = [ "baud", "devpath", "idproduct", "idvendor", "interfacenum", "serial", "use_ser2net", "worker" ]
+            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "serial", "use_ser2net", "worker" ]
             for keyword in board["uart"]:
                 if not keyword in keywords_uart:
                     print("WARNING: unknown keyword %s" % keyword)
@@ -728,6 +728,9 @@ def main():
                 udev_line += 'ATTRS{devpath}=="%s", ' % board["uart"]["devpath"]
             if "interfacenum" in uart:
                 udev_line += 'ENV{ID_USB_INTERFACE_NUM}=="%s", ' % board["uart"]["interfacenum"]
+            if "env" in uart:
+                for env in uart["env"]:
+                    udev_line += 'ENV{%s}=="%s",' % (env, uart["env"][env])
             udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % board_name
             if not os.path.isdir("output/%s/udev" % host):
                 os.mkdir("output/%s/udev" % host)
