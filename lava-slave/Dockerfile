@@ -5,6 +5,7 @@ RUN apt-get update
 # telnet is for using ser2net
 # git is necessary for checkout tests
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install telnet git ser2net patch lavacli
+RUN if [ $(uname -m) = amd64 -o $(uname -m) = x86_64 ];then apt-get -y install linux-image-amd64 ; fi
 
 COPY configs/lava-slave /etc/lava-dispatcher/lava-slave
 
