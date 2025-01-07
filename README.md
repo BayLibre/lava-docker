@@ -295,6 +295,7 @@ slaves:
     host_healthcheck:		If true, enable the optional healthcheck container. See hosting healthchecks below
     lava-coordinator:		Does the slave should ran a lava-coordinator
     expose_ser2net:		Do ser2net ports need to be available on host
+    joblimit: x         Add a joblimit to the worker (default 0)
     custom_volumes:
       - "name:path"		Add a custom volume
     expose_ports:		Expose port p1 on the host to p2 on the worker slave.

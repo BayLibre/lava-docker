@@ -72,6 +72,9 @@ do
 		lavacli $LAVACLIOPTS workers add --description "LAVA dispatcher on $(cat /root/phyhostname)" $worker || exit $?
 		# does we ran 2020.09+ and worker need a token
 	fi
+
+	lavacli $LAVACLIOPTS workers update --job-limit $LAVA_JOBLIMIT $worker || exit $?
+
 	grep -q "TOKEN" /root/entrypoint.sh
 	if [ $? -eq 0 ];then
 		# This is 2020.09+

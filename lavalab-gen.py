@@ -421,6 +421,7 @@ def main():
             "devices", "dispatcher_ip", "default_slave",
             "extra_actions", "export_ser2net", "expose_ser2net", "expose_ports", "env",
             "host", "host_healthcheck",
+            "joblimit", 
             "loglevel", "lava-coordinator", "lava_worker_token",
             "name",
             "remote_user", "remote_master", "remote_address", "remote_rpc_port", "remote_proto", "remote_user_token",
@@ -549,6 +550,10 @@ def main():
             remote_proto = worker["remote_proto"]
         remote_uri = "%s://%s:%s@%s:%s/RPC2" % (remote_proto, remote_user, remote_token, remote_address, remote_rpc_port)
         remote_master_url = "%s://%s:%s" % (remote_proto, remote_address, remote_rpc_port)
+        joblimit = 0
+
+        if 'joblimit' in worker:
+            joblimit = worker['joblimit']
 
         fsetupenv = open("%s/setupenv" % workerdir, "a")
         fsetupenv.write("LAVA_MASTER_URI=%s\n" % remote_uri)
@@ -556,6 +561,7 @@ def main():
         fsetupenv.write("LAVA_MASTER_USER=%s\n" % remote_user)
         fsetupenv.write("LAVA_MASTER_BASEURI=%s://%s:%s/RPC2\n" % (remote_proto, remote_address, remote_rpc_port))
         fsetupenv.write("LAVA_MASTER_TOKEN=%s\n" % remote_token)
+        fsetupenv.write("LAVA_JOBLIMIT=%d\n" % joblimit)
         fsetupenv.close()
 
         if "lava-coordinator" in worker and worker["lava-coordinator"]:
