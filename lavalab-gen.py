@@ -189,7 +189,7 @@ def main():
             f_pg.close()
         if "version" in worker:
             dockerfile = open("%s/Dockerfile" % workerdir, "r+")
-            dockerfilec = re.sub('(^FROM.*:).*', '\g<1>%s' % worker["version"], dockerfile.read())
+            dockerfilec = re.sub('(^FROM.*:).*', r'\g<1>%s' % worker["version"], dockerfile.read())
             dockerfile.seek(0)
             dockerfile.write(dockerfilec)
             dockerfile.close()
@@ -477,7 +477,7 @@ def main():
         slave_master = None
         if "version" in worker:
             dockerfile = open("%s/Dockerfile" % workerdir, "r+")
-            dockerfilec = re.sub('(^FROM.*:).*', '\g<1>%s' % worker["version"], dockerfile.read())
+            dockerfilec = re.sub('(^FROM.*:).*', r'\g<1>%s' % worker["version"], dockerfile.read())
             dockerfile.seek(0)
             dockerfile.write(dockerfilec)
             dockerfile.close()
