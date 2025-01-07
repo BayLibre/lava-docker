@@ -20,6 +20,14 @@ jobs:
         run: |
           python -m py_compile lavalab-gen.py 2> output
           if [ -s output ] ; then cat output ; exit 1 ; fi
+      - name: check version change
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          export OUTDIR=$(mktemp -d --dry-run)
+          ./lavalab-gen.py -o $OUTDIR boards-ci2.yaml
+          grep -q 2024.xx $OUTDIR/local/masterci1/Dockerfile || exit 1
+          grep -q 2024.xx $OUTDIR/local/lab-ci-0/Dockerfile || exit 1
   check-lava-lab-gen:
     runs-on: ubuntu-22.04
     steps:
