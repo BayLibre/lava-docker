@@ -425,7 +425,7 @@ def main():
             "joblimit", 
             "loglevel", "lava-coordinator", "lava_worker_token",
             "name",
-            "remote_user", "remote_master", "remote_address", "remote_rpc_port", "remote_proto", "remote_user_token",
+            "raw_devices", "remote_user", "remote_master", "remote_address", "remote_rpc_port", "remote_proto", "remote_user_token",
             "tags",
             "use_docker", "use_nfs", "use_nbd", "use_overlay_server", "use_tftp", "use_tap",
             "version",
@@ -596,6 +596,10 @@ def main():
                 fp.write("\n")
             fp.close()
             os.chmod("%s/scripts/extra_actions" % workerdir, 0o755)
+        if "raw_devices" in worker:
+            for rd in worker["raw_devices"]:
+                dockcomp_add_device(dockcomp, worker_name, f"{rd}:{rd}")
+
 
         if "devices" in worker:
             udevdir = "%s/udev" % hostdir

@@ -22,6 +22,8 @@ slaves:
     use_overlay_server: false
     use_tftp: false
     version: 2024.xx
+    raw_devices:
+      - '/dev/bus/usb'
 
 boards:
   - name: qemu-01
