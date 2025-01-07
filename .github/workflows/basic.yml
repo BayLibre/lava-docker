@@ -5,6 +5,21 @@ on:  # yamllint disable-line rule:truthy rule:line-length
   pull_request:
 
 jobs:
+  lava-lab-gen-syntax:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9.20', "3.10.15", "3.11.9", "3.12.6", 3.13]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: check syntax of lavalab-gen
+        run: |
+          python -m py_compile lavalab-gen.py 2> output
+          if [ -s output ] ; then cat output ; exit 1 ; fi
   check-lava-lab-gen:
     runs-on: ubuntu-22.04
     steps:
