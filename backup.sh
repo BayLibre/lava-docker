@@ -1,17 +1,46 @@
 #!/bin/sh
 
+DOCKERNAME=master
 BACKUP_DIR="backup-$(date +%Y%m%d_%H%M)"
 # use /tmp by default on host (this is used by tar)
 TMPDIR=${TMPDIR:-/tmp}
 export TMPDIR
+
+usage() {
+	echo "$0 [-h|--help] [-n dockername]"
+}
+
+while [ $# -ge 1 ]
+do
+	case $1 in
+	-h)
+		usage
+		exit 0
+	;;
+	--help)
+		usage
+		exit 0
+	;;
+	-n)
+		shift
+		DOCKERNAME=$1
+		shift
+	;;
+	*)
+		usage
+		exit 1
+	;;
+	esac
+done
 
 mkdir -p $TMPDIR
 
 mkdir $BACKUP_DIR
 cp boards.yaml $BACKUP_DIR
 
-DOCKERID=$(docker ps |grep master | cut -d' ' -f1)
+DOCKERID=$(docker ps |grep "$DOCKERNAME" | cut -d' ' -f1)
 if [ -z "$DOCKERID" ];then
+	echo "ERROR: unable to find docker named $DOCKERNAME"
 	exit 1
 fi
 

@@ -139,3 +139,27 @@ jobs:
         run: cd output/local && docker compose up -d
       - name: Wait for LAVA 2023.10 to be started
         run: sh .github/workflows/wait-for-docker.sh
+  test-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install lavacli
+        run: sudo apt-get -y install lavacli
+      - name: test valid and invalid usage of backup.sh
+        run: |
+          ./backup.sh -n && exit 1
+          ./backup.sh -h || exit 1
+          ./backup.sh --help || exit 1
+      - run: ./lavalab-gen.py boards-ci-testbackup.yaml
+      - name: Build lava-docker
+        run: cd output/local && docker compose build
+      - name: Launch lava-docker
+        run: cd output/local && docker compose up -d
+      - name: Wait for LAVA to be started
+        run: sh .github/workflows/wait-for-docker.sh central
+      - name: Run backup
+        run: ./backup.sh -n central
+      - name: Check backup
+        run: |
+          pwd
+          ls -l backup-latest
