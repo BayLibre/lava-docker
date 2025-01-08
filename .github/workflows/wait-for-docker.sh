@@ -1,5 +1,11 @@
 #!/bin/sh
 
+DOCKERNAME=master
+if [ ! -z "$1" ];then
+	DOCKERNAME=$1
+	echo "DEBUG: master name is $DOCKERNAME"
+fi
+
 cd output/local
 
 TIMEOUT=0
@@ -22,15 +28,16 @@ do
 			fi
 		fi
 	fi
-	docker-compose logs --tail=60
+	docker compose logs --tail=60
 	docker ps > /tmp/alldocker
-	grep -q master /tmp/alldocker
+	grep -q $DOCKERNAME /tmp/alldocker
 	if [ $? -ne 0 ];then
 		echo "=========================================="
 		echo "=========================================="
 		echo "=========================================="
-		echo "ERROR: master died"
-		docker-compose logs
+		echo "ERROR: master $DOCKERNAME died"
+		docker ps
+		docker compose logs
 		exit 1
 	fi
 	sleep 10

@@ -295,6 +295,9 @@ slaves:
     host_healthcheck:		If true, enable the optional healthcheck container. See hosting healthchecks below
     lava-coordinator:		Does the slave should ran a lava-coordinator
     expose_ser2net:		Do ser2net ports need to be available on host
+    joblimit: x         Add a joblimit to the worker (default 0)
+    rawdevices:         (optional) Add devpath inside worker
+      - devpath
     custom_volumes:
       - "name:path"		Add a custom volume
     expose_ports:		Expose port p1 on the host to p2 on the worker slave.
@@ -350,6 +353,8 @@ boards:
       ser2net_options:	(optional) A list of ser2net options to add
         - option1
         - option2
+      env:
+        envname: value  (optional) add an udev env filter ENV{envname}=="value"
     connection_command: A command to be ran for getting a serial console
     pdu_generic:
       hard_reset_command: commandline to reset the board

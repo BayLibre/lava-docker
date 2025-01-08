@@ -5,6 +5,29 @@ on:  # yamllint disable-line rule:truthy rule:line-length
   pull_request:
 
 jobs:
+  lava-lab-gen-syntax:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9.20', "3.10.15", "3.11.9", "3.12.6", 3.13]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: check syntax of lavalab-gen
+        run: |
+          python -m py_compile lavalab-gen.py 2> output
+          if [ -s output ] ; then cat output ; exit 1 ; fi
+      - name: check version change
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+          export OUTDIR=$(mktemp -d --dry-run)
+          ./lavalab-gen.py -o $OUTDIR boards-ci2.yaml
+          grep -q 2024.xx $OUTDIR/local/masterci1/Dockerfile || exit 1
+          grep -q 2024.xx $OUTDIR/local/lab-ci-0/Dockerfile || exit 1
   check-lava-lab-gen:
     runs-on: ubuntu-22.04
     steps:
@@ -16,7 +39,7 @@ jobs:
       - name: Verify DNS query in docker
         run: sh .github/docker-resolv.sh
       - name: Build lava-docker
-        run: cd output/local && docker-compose build
+        run: cd output/local && docker compose build
   check-formats:
     runs-on: ubuntu-22.04
     steps:
@@ -38,9 +61,9 @@ jobs:
       - name: Verify DNS query in docker
         run: sh .github/docker-resolv.sh
       - name: Build lava-docker
-        run: cd output/local && docker-compose build
+        run: cd output/local && docker compose build
       - name: Launch lava-docker
-        run: cd output/local && docker-compose up -d
+        run: cd output/local && docker compose up -d
       - name: Wait for LAVA to be started
         run: sh .github/workflows/wait-for-docker.sh
       - name: Wait for first job to be completed
@@ -50,7 +73,7 @@ jobs:
       - name: Run backup
         run: ./backup.sh
       - name: stop docker
-        run: cd output/local && docker-compose down
+        run: cd output/local && docker compose down
 
       - name: Clean old install
         run: rm -r output
@@ -59,9 +82,9 @@ jobs:
       - name: Run lavalab-gen
         run: ./lavalab-gen.py boards-ci-2023.01.yaml
       - name: Build lava-docker
-        run: cd output/local && docker-compose build
+        run: cd output/local && docker compose build
       - name: Launch lava-docker
-        run: cd output/local && docker-compose up -d
+        run: cd output/local && docker compose up -d
       - name: Wait for LAVA to be started
         run: sh .github/workflows/wait-for-docker.sh
       - name: Wait for first job to be completed
@@ -74,17 +97,17 @@ jobs:
         # yamllint disable-line rule:line-length
         run: lavacli --uri http://admin:tokenforci@127.0.0.1:10080/RPC2 jobs logs 1 > log1 && [[ -s log1 ]] || exit 1
       - name: stop docker
-        run: cd output/local && docker-compose down
+        run: cd output/local && docker compose down
 
       - name: restart lava-docker
-        run: cd output/local && docker-compose up -d
+        run: cd output/local && docker compose up -d
       - name: Wait for LAVA to be started
         run: sh .github/workflows/wait-for-docker.sh
 
       - name: Run backup of 2023.01
         run: ./backup.sh
       - name: stop docker
-        run: cd output/local && docker-compose down
+        run: cd output/local && docker compose down
 
 #      - name: Clean old install
 #        run: rm -r output
@@ -93,16 +116,16 @@ jobs:
 #      - name: Run lavalab-gen
 #        run: ./lavalab-gen.py boards-ci-2023.06.yaml
 #      - name: Build lava-docker 2023.06
-#        run: cd output/local && docker-compose build
+#        run: cd output/local && docker compose build
 #      - name: Launch lava-docker 2023.06
-#        run: cd output/local && docker-compose up -d
+#        run: cd output/local && docker compose up -d
 #      - name: Wait for LAVA 2023.06 to be started
 #        run: sh .github/workflows/wait-for-docker.sh
 #
 #      - name: Run backup of 2023.06
 #        run: ./backup.sh
 #      - name: stop docker
-#        run: cd output/local && docker-compose down
+#        run: cd output/local && docker compose down
 
       - name: Clean old install
         run: rm -r output
@@ -111,8 +134,32 @@ jobs:
       - name: Run lavalab-gen
         run: ./lavalab-gen.py boards-ci-2023.10.yaml
       - name: Build lava-docker 2023.10
-        run: cd output/local && docker-compose build
+        run: cd output/local && docker compose build
       - name: Launch lava-docker 2023.10
-        run: cd output/local && docker-compose up -d
+        run: cd output/local && docker compose up -d
       - name: Wait for LAVA 2023.10 to be started
         run: sh .github/workflows/wait-for-docker.sh
+  test-backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: install lavacli
+        run: sudo apt-get -y install lavacli
+      - name: test valid and invalid usage of backup.sh
+        run: |
+          ./backup.sh -n && exit 1
+          ./backup.sh -h || exit 1
+          ./backup.sh --help || exit 1
+      - run: ./lavalab-gen.py boards-ci-testbackup.yaml
+      - name: Build lava-docker
+        run: cd output/local && docker compose build
+      - name: Launch lava-docker
+        run: cd output/local && docker compose up -d
+      - name: Wait for LAVA to be started
+        run: sh .github/workflows/wait-for-docker.sh central
+      - name: Run backup
+        run: ./backup.sh -n central
+      - name: Check backup
+        run: |
+          pwd
+          ls -l backup-latest
