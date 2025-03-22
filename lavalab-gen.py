@@ -722,7 +722,7 @@ def main():
             device_line += "{% set no_kvm = True %}\n"
         udevdir = None
         if "uart" in board:
-            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "serial", "use_ser2net", "worker" ]
+            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "ser2net_keepopen", "serial", "use_ser2net", "worker" ]
             for keyword in board["uart"]:
                 if not keyword in keywords_uart:
                     print("WARNING: unknown keyword %s" % keyword)
