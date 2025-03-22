@@ -43,13 +43,13 @@ docker-compose build
 docker-compose up -d
 ```
 
-* Once launched, you can access the LAVA web interface via http://localhost:10080/.
+* Once launched, you can access the LAVA web interface via http://localhost:10070/.
 With the default users, you can login with admin:admin.
 
 * By default, a LAVA healthcheck job will be run on the qemu device.
-You will see it in the "All Jobs" list: http://localhost:10080/scheduler/alljobs
+You will see it in the "All Jobs" list: http://localhost:10070/scheduler/alljobs
 
-* You can also see full job output by clicking the blue eye icon ("View job details") (or via http://localhost:10080/scheduler/job/1 since it is the first job ran)
+* You can also see full job output by clicking the blue eye icon ("View job details") (or via http://localhost:10070/scheduler/job/1 since it is the first job ran)
 
 * For more details, see https://validation.linaro.org/static/docs/v2/first-job.html
 
@@ -169,7 +169,7 @@ By default, the following ports are used by lava-docker and are proxyfied on the
 - 5500		proxyfied to the slave for Notification
 - 5555		proxyfied to the master (LAVA logger)
 - 5556		proxyfied to the master (LAVA master)
-- 10080		proxyfied to the master (Web interface)
+- 10070		proxyfied to the master (Web interface)
 - 55950-56000	proxyfied to the slave for NBD
 
 ### DHCPD
@@ -219,7 +219,7 @@ masters:
     version: "202x.xx"	LAVA version for master
     webadmin_https:	    Does the LAVA webadmin is accessed via https
     listen_address:     Address where webinterface_port will listen (default to 0.0.0.0)
-    webinterface_port:  Port number to use for the LAVA web interface (default to "10080")
+    webinterface_port:  Port number to use for the LAVA web interface (default to "10070")
     lava-coordinator:		Does the master should ran a lava-coordinator and export its port
     persistent_db: true/false	(default false) Is the postgresql DB is persistent over reboot.
                                 WARNING: this is working accross the same LAVA version, this do not work when there is a postgresql major update
@@ -325,6 +325,7 @@ boards:
     type: the LAVA device-type of this device
     slave:		(optional) Name of the slave managing this device. Default to first slave found or default_slave if set.
     kvm: (For qemu only) Does the qemu could use KVM (default: no)
+    lava:           (optional) Default is True, If set to False, the board will be not added to LAVA, but udev rules is still added.
     uboot_ipaddr:	(optional) a static IP to set in uboot
     uboot_macaddr:	(Optional) the MAC address to set in uboot
     custom_option:	(optional) All following strings will be directly append to devicefile included in {% opt %}
