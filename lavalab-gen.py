@@ -856,11 +856,13 @@ def main():
         if not os.path.isdir(devices_path):
             os.mkdir(devices_path)
         board_device_file = "%s/%s.jinja2" % (devices_path, board_name)
+        with open(dockcomposeymlpath, 'w') as f:
+            yaml.dump(dockcomp, f)
+        if "lava" in board and not board["lava"]:
+            continue
         fp = open(board_device_file, "w")
         fp.write(device_line)
         fp.close()
-        with open(dockcomposeymlpath, 'w') as f:
-            yaml.dump(dockcomp, f)
         #end for board
 
     for slave_name in ser2net_ports:
