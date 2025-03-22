@@ -2,6 +2,7 @@
 masters:
   - name: masterci1
     host: local
+    write_dot_env: True
     users:
       - name: admin
         token: tokenforci

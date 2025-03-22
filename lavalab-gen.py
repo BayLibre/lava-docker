@@ -124,7 +124,7 @@ def main():
             "tokens", "type",
             "users",
             "version",
-            "webadmin_https", "webinterface_port",
+            "webadmin_https", "webinterface_port", "write_dot_env",
             ]
         for keyword in master:
             if not keyword in keywords_master:
@@ -314,16 +314,25 @@ def main():
             )
         fsettings.close()
         if "users" in worker:
+            write_dot_env = False
+            if "write_dot_env" in worker:
+                write_dot_env = worker["write_dot_env"]
             for user in worker["users"]:
                 keywords_users = [ "name", "staff", "superuser", "password", "token", "email", "groups" ]
                 for keyword in user:
                     if not keyword in keywords_users:
                         print("WARNING: unknown keyword %s" % keyword)
                 username = user["name"]
+                if write_dot_env:
+                    with open(f"{outputdir}/.env", 'a') as f:
+                        f.write(f"USER={username}\n")
                 ftok = open("%s/%s" % (userdir, username), "w")
                 if "token" in user:
                     token = user["token"]
                     ftok.write("TOKEN=" + token + "\n")
+                    if write_dot_env:
+                        with open(f"{outputdir}/.env", 'a') as f:
+                            f.write(f"TOKEN={token}\n")
                 if "password" in user:
                     password = user["password"]
                     ftok.write("PASSWORD=" + password + "\n")
@@ -720,8 +729,9 @@ def main():
             # board specific hacks
         if devicetype == "qemu" and not use_kvm:
             device_line += "{% set no_kvm = True %}\n"
+        udevdir = None
         if "uart" in board:
-            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "serial", "use_ser2net", "worker" ]
+            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "ser2net_keepopen", "serial", "use_ser2net", "worker" ]
             for keyword in board["uart"]:
                 if not keyword in keywords_uart:
                     print("WARNING: unknown keyword %s" % keyword)
@@ -746,12 +756,7 @@ def main():
                 for env in uart["env"]:
                     udev_line += 'ENV{%s}=="%s",' % (env, uart["env"][env])
             udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % board_name
-            udevdir = "%s/udev" % hostdir
-            if not os.path.isdir(udevdir):
-                os.mkdir(udevdir)
-            fp = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
-            fp.write(udev_line)
-            fp.close()
+            udevdir = "%s/udev" % workerdir
             if not "bind_dev" in slave or not slave["bind_dev"]:
                 dockcomp_add_device(dockcomp, worker_name, "/dev/%s:/dev/%s" % (board_name, board_name))
             use_ser2net = False
@@ -774,20 +779,7 @@ def main():
                     os.mkdir(ser2netdir)
                 if (not "bind_dev" in slave or not slave["bind_dev"]) and worker_ser2net == worker_name:
                     dockcomp_add_device(dockcomp, worker_name, "/dev/%s:/dev/%s" % (board_name, board_name))
-                udev_line = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="%04x", ATTRS{idProduct}=="%04x",' % (idvendor, idproduct)
-                if "serial" in uart:
-                    udev_line += 'ATTRS{serial}=="%s", ' % board["uart"]["serial"]
-                if "devpath" in uart:
-                    udev_line += 'ATTRS{devpath}=="%s", ' % board["uart"]["devpath"]
-                if "interfacenum" in uart:
-                    udev_line += 'ENV{ID_USB_INTERFACE_NUM}=="%s", ' % board["uart"]["interfacenum"]
-                udev_line += 'MODE="0664", OWNER="uucp", SYMLINK+="%s"\n' % board_name
                 udevdir = "%s/%s/udev" % (hostdir, worker_ser2net)
-                if not os.path.isdir(udevdir):
-                    os.mkdir(udevdir)
-                fp = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
-                fp.write(udev_line)
-                fp.close()
                 if not worker_ser2net in ser2net_ports:
                     ser2net_ports[worker_ser2net] = ser2net_port_start
                     fp = open("%s/ser2net.yaml" % ser2netdir, "a")
@@ -812,6 +804,12 @@ def main():
                 fp.write("    max-connections: 10\n")
                 ser2net_ports[worker_ser2net] += 1
                 fp.close()
+        if udevdir is not None:
+            if not os.path.isdir(udevdir):
+                os.mkdir(udevdir)
+            fp = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
+            fp.write(udev_line)
+            fp.close()
         if "connection_command" in board:
             connection_command = board["connection_command"]
             device_line += template_device_connection_command.substitute(connection_command=connection_command)
@@ -867,11 +865,13 @@ def main():
         if not os.path.isdir(devices_path):
             os.mkdir(devices_path)
         board_device_file = "%s/%s.jinja2" % (devices_path, board_name)
+        with open(dockcomposeymlpath, 'w') as f:
+            yaml.dump(dockcomp, f)
+        if "lava" in board and not board["lava"]:
+            continue
         fp = open(board_device_file, "w")
         fp.write(device_line)
         fp.close()
-        with open(dockcomposeymlpath, 'w') as f:
-            yaml.dump(dockcomp, f)
         #end for board
 
     for slave_name in ser2net_ports:
