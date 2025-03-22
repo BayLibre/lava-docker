@@ -140,9 +140,11 @@ def main():
         os.mkdir(hostdir)
         shutil.copy("deploy.sh", hostdir)
         if not "webinterface_port" in master:
-            webinterface_port = "10080"
+            webinterface_port = "10070"
         else:
             webinterface_port = master["webinterface_port"]
+        with open(f"{outputdir}/.env", 'a') as f:
+            f.write(f"WEBIF_PORT={webinterface_port}\n")
         if "listen_address" in master:
             listen_address = master["listen_address"]
         else:
