@@ -124,7 +124,7 @@ def main():
             "tokens", "type",
             "users",
             "version",
-            "webadmin_https", "webinterface_port",
+            "webadmin_https", "webinterface_port", "write_dot_env",
             ]
         for keyword in master:
             if not keyword in keywords_master:
@@ -314,16 +314,25 @@ def main():
             )
         fsettings.close()
         if "users" in worker:
+            write_dot_env = False
+            if "write_dot_env" in worker:
+                write_dot_env = worker["write_dot_env"]
             for user in worker["users"]:
                 keywords_users = [ "name", "staff", "superuser", "password", "token", "email", "groups" ]
                 for keyword in user:
                     if not keyword in keywords_users:
                         print("WARNING: unknown keyword %s" % keyword)
                 username = user["name"]
+                if write_dot_env:
+                    with open(f"{outputdir}/.env", 'a') as f:
+                        f.write(f"USER={username}\n")
                 ftok = open("%s/%s" % (userdir, username), "w")
                 if "token" in user:
                     token = user["token"]
                     ftok.write("TOKEN=" + token + "\n")
+                    if write_dot_env:
+                        with open(f"{outputdir}/.env", 'a') as f:
+                            f.write(f"TOKEN={token}\n")
                 if "password" in user:
                     password = user["password"]
                     ftok.write("PASSWORD=" + password + "\n")
