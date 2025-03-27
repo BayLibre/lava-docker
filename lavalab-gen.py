@@ -611,10 +611,16 @@ def main():
 
 
         if "devices" in worker:
-            udevdir = "%s/udev" % hostdir
-            if not os.path.isdir(udevdir):
-                os.mkdir(udevdir)
             for udev_dev in worker["devices"]:
+                workername = worker["name"]
+                if "worker" in udev_dev:
+                    workername = udev_dev["worker"]
+                udevdir = "%s/%s/udev" % (hostdir, workername)
+                uworkerdir = "%s/%s" % (hostdir, workername)
+                if not os.path.isdir(uworkerdir):
+                    os.mkdir(uworkerdir)
+                if not os.path.isdir(udevdir):
+                    os.mkdir(udevdir)
                 udev_line = 'SUBSYSTEM=="tty", ATTRS{idVendor}=="%04x", ATTRS{idProduct}=="%04x",' % (udev_dev["idvendor"], udev_dev["idproduct"])
                 if "serial" in udev_dev:
                     udev_line += 'ATTRS{serial}=="%s", ' % udev_dev["serial"]
@@ -624,7 +630,7 @@ def main():
                 fudev = open("%s/99-lavaworker-udev.rules" % udevdir, "a")
                 fudev.write(udev_line)
                 fudev.close()
-                if not "bind_dev" in slave or not slave["bind_dev"]:
+                if workername == worker["name"] and (not "bind_dev" in slave or not slave["bind_dev"]):
                     dockcomp_add_device(dockcomp, worker_name, "/dev/%s:/dev/%s" % (udev_dev["name"], udev_dev["name"]))
         use_tftp = True
         if "use_tftp" in worker:
