@@ -315,8 +315,8 @@ slaves:
     - tag2
     devices:			A list of devices which need UDEV rules
       - name:			The name of the device
-        vendorid:		The VID of the UART (Formated as 0xXXXX)
-        productid:		the PID of the UART (Formated as 0xXXXX)
+        idvendor:		The VID of the UART (Formated as 0xXXXX)
+        idproduct:		the PID of the UART (Formated as 0xXXXX)
         serial:			The serial number of the device if the device got one
         devpath:		The UDEV devpath to this device if more than one is present
 
