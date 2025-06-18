@@ -461,7 +461,6 @@ def main():
             os.mkdir(hostdir)
             shutil.copy("deploy.sh", hostdir)
             dockcomp = {}
-            dockcomp["version"] = "2.0"
             dockcomp["services"] = {}
         else:
             #master exists
