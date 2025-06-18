@@ -50,6 +50,28 @@ jobs:
         run: find -iname '*.yaml' | xargs yamllint
       - name: verify yml files
         run: find -iname '*.yml' | xargs yamllint
+  check-lava-healthcheck:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: install lavacli
+        run: sudo apt-get -y install lavacli
+      - run: ./lavalab-gen.py boards-ci-hc.yaml
+      - run: cat output/local/docker-compose.yml
+      - name: Verify DNS query in docker
+        run: sh .github/docker-resolv.sh
+      - name: Build lava-docker
+        run: cd output/local && docker compose build --no-cache
+      - name: Launch lava-docker
+        run: cd output/local && docker compose up -d
+      - name: Wait for LAVA to be started
+        run: sh .github/workflows/wait-for-docker.sh
+      - name: Wait for first job to be completed
+        # yamllint disable-line rule:line-length
+        run: sh .github/workflows/lavacli.sh jobs wait 1
+      - name: Check if all is okay
+        # yamllint disable-line rule:line-length
+        run: sh .github/workflows/lavacli.sh health 1
   check-lava-upgrade:
     runs-on: ubuntu-22.04
     steps:
@@ -69,6 +91,9 @@ jobs:
       - name: Wait for first job to be completed
         # yamllint disable-line rule:line-length
         run: sh .github/workflows/lavacli.sh jobs wait 1
+      - name: Check if all is okay
+        # yamllint disable-line rule:line-length
+        run: sh .github/workflows/lavacli.sh health 1
 
       - name: Run backup
         run: ./backup.sh
