@@ -11,3 +11,4 @@ COPY --from=0 /lava-healthchecks-binary/mainline /usr/share/nginx/html/mainline/
 COPY --from=0 lava-healthchecks-binary/images /usr/share/nginx/html/images/
 COPY --from=0 lava-healthchecks-binary/next /usr/share/nginx/html/next/
 COPY --from=0 lava-healthchecks-binary/stable /usr/share/nginx/html/stable/
+COPY --from=0 lava-healthchecks-binary/rootfs /usr/share/nginx/html/rootfs/
