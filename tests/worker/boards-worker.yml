@@ -1,0 +1,46 @@
+masters:
+  - name: master
+    host: local
+    users:
+      - name: admin
+        token: tokenforci
+        password: passwordforci
+        superuser: true
+        staff: true
+    tokens:
+      - username: admin
+        token: dfjdfkfkdjfkdsjfslforci
+        description: no description
+
+slaves:
+  - name: lab-ci-0
+    host: local
+    remote_master: master
+    remote_user: admin
+
+boards:
+  - name: qemu-03
+    type: qemu
+  - name: minnowboard-turbot-E3826-01
+    type: minnowboard-turbot-E3826
+    pdu_generic:
+      hard_reset_command: power-sispmctl.sh reset 2 01:01:4f:ee:ae
+      power_off_command: power-sispmctl.sh off 2 01:01:4f:ee:ae
+      power_on_command: power-sispmctl.sh on 2 01:01:4f:ee:ae
+    uart:
+      idvendor: 0x0403
+      idproduct: 0x6001
+      serial: "AL00CN4X"
+      worker: worker-ser2net
+    custom_option:
+      - "set grub_autoboot_prompt = 'Press enter to boot the selected OS'"
+  - name: sun7i-a20-olinuxino-micro-01
+    type: sun7i-a20-olinuxino-micro
+    pdu_generic:
+      hard_reset_command: /usr/local/bin/tinyci.sh tinyci5-jack1 reset 2
+      power_off_command: /usr/local/bin/tinyci.sh tinyci5-jack1 off 2
+      power_on_command: /usr/local/bin/tinyci.sh tinyci5-jack1 on 2
+    uart:
+      idvendor: 0x0403
+      idproduct: 0x6010
+      serial: "D30HFJPD"
