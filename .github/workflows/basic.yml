@@ -40,6 +40,12 @@ jobs:
         run: sh .github/docker-resolv.sh
       - name: Build lava-docker
         run: cd output/local && docker compose build
+  lava-docker-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: run custom mini tests framwork
+        run: ./tests.py
   check-formats:
     runs-on: ubuntu-22.04
     steps:
