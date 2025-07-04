@@ -1,0 +1,23 @@
+tests:
+  worker:
+    comment: verify support of external worker
+    directory: worker
+    boardyaml: boards-worker.yml
+    buildit: local/docker-compose.yml
+    tests:
+      - directory: local
+        exists: True
+      - directory: local/worker-ser2net
+        exists: True
+      - directory: local/worker-ser2net/udev
+        exists: True
+      - directory: local/lab-ci-0/udev
+        exists: True
+      - filecompare: local/worker-ser2net/udev/99-lavaworker-udev.rules
+        base: worker/99-lavaworker-udev.rules
+  extra_hosts:
+    comment: verify extra_hosts
+    directory: extra_hosts
+    boardyaml: boards-ci.yaml
+    buildit: local/docker-compose.yml
+    tests:
