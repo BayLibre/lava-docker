@@ -1,0 +1,1 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001",ATTRS{serial}=="AL00CN4X", MODE="0664", OWNER="uucp", SYMLINK+="minnowboard-turbot-E3826-01"
