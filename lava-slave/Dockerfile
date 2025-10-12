@@ -1,5 +1,8 @@
 FROM lavasoftware/lava-dispatcher:2025.10
 
+RUN if [ -e /etc/apt/sources.list.d/debian.sources ] ;then sed -i 's,.*bullseye-backports,#,' /etc/apt/sources.list.d/debian.sources ; fi
+RUN if [ -e /etc/apt/sources.list.d/backports.list ] ;then sed -i 's,.*bullseye-backports,#,' /etc/apt/sources.list.d/backports.list ; fi
+
 RUN apt-get update
 
 # telnet is for using ser2net
