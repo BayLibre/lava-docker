@@ -113,6 +113,7 @@ def main():
         keywords_master = [
             "allowed_hosts",
             "build_args",
+            "docker_external_networks",
             "event_notifications",
             "groups", "gunicorn_workers",
             "healthcheck_url", "host", "http_fqdn",
@@ -174,6 +175,14 @@ def main():
             dockcomp["volumes"][etc_volume_name] = {}
             dockcomp["volumes"][pg_volume_name] = {}
             dockcomp["volumes"]["lava_job_output"] = {}
+        external_networks = []
+        if "docker_external_networks" in master:
+            external_networks = master["docker_external_networks"]
+            dockcomp["services"][name]["networks"] = external_networks
+        if len(external_networks) > 0:
+            dockcomp["networks"] = {}
+            for external_network in external_networks:
+                dockcomp["networks"][external_network] = { "external": True }
 
         shutil.copytree("lava-master", workerdir)
         os.mkdir("%s/devices" % workerdir)
@@ -430,7 +439,7 @@ def main():
             "arch",
             "bind_dev", "build_args",
             "custom_volumes",
-            "devices", "dispatcher_ip", "default_slave",
+            "devices", "dispatcher_ip", "default_slave", "docker_external_networks",
             "extra_actions", "extra_hosts", "export_ser2net", "expose_ser2net", "expose_ports", "env",
             "host", "host_healthcheck",
             "joblimit", 
@@ -644,11 +653,15 @@ def main():
             else:
                 dockcomp["services"][name]["ports"].append("69:69/udp")
         use_docker = False
+        external_networks = []
         if "use_docker" in worker:
             use_docker = worker["use_docker"]
         if use_docker:
             dockcomp["services"][worker_name]["volumes"].append("/var/run/docker.sock:/var/run/docker.sock")
             dockcomp["services"][worker_name]["volumes"].append("/run/udev/data:/run/udev/data")
+        if "docker_external_networks" in worker:
+            external_networks = worker["docker_external_networks"]
+            dockcomp["services"][worker_name]["networks"] = external_networks
         # TODO permit to change the range of NBD ports
         use_nbd = True
         if "use_nbd" in worker:
