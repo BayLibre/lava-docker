@@ -13,6 +13,7 @@ RUN if [ $(uname -m) = amd64 -o $(uname -m) = x86_64 ];then apt-get -y install l
 COPY configs/lava-slave /etc/lava-dispatcher/lava-slave
 
 COPY configs/tftpd-hpa /etc/default/tftpd-hpa
+COPY lava-coordinator/ /etc/lava-coordinator/
 
 COPY scripts/ /usr/local/bin/
 RUN chmod a+x /usr/local/bin/*

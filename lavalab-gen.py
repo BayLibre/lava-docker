@@ -579,7 +579,7 @@ def main():
         fsetupenv.close()
 
         if "lava-coordinator" in worker and worker["lava-coordinator"]:
-            fcoordinator = open("%s/lava-coordinator/lava-coordinator.cnf" % workerdir, 'w')
+            fcoordinator = open("%s/lava-coordinator/lava-coordinator.conf" % workerdir, 'w')
             fcoordinator.write(template_lava_coordinator_conf.substitute(masterurl=remote_address))
             fcoordinator.close()
         if "dispatcher_ip" in worker:
