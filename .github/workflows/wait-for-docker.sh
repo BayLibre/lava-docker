@@ -48,7 +48,7 @@ while [ $TIMEOUT -le 1200 ]
 do
 	need_wait
 	RET=$?
-	docker compose logs --tail=60
+	#docker compose logs --tail=60
 	docker ps > /tmp/alldocker
 	grep -q $DOCKERNAME /tmp/alldocker
 	if [ $? -ne 0 ];then
@@ -61,6 +61,7 @@ do
 		exit 1
 	fi
 	if [ $RET -eq 0 ];then
+		docker compose logs
 		exit 0
 	fi
 	sleep 10

@@ -69,6 +69,17 @@ if [ $? -eq 0 ];then
 	lava-server manage makemigrations
 	yes yes | lava-server manage migrate || exit $?
 fi
+
+find /usr/lib/python3 |grep -q check_uniqueness.py
+if [ $? -eq 0 ];then
+	echo "DEBUG: check_uniqueness FOUND"
+	# check bug fixed in 2023.10
+	lava-server manage check_uniqueness --dry-run || exit $?
+	lava-server manage check_uniqueness --yes || exit $?
+else
+	echo "DEBUG: check_uniqueness not FOUND"
+fi
+
 # if we came from 2023.01 to 2023.05, we need to handle the migration bug
 grep -q '2023.0[1-5]' /tmp/workerversions
 if [ $? -eq 0 ];then

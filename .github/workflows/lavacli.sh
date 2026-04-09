@@ -2,6 +2,9 @@
 
 . output/.env
 
+sleep 20
+
+echo "DEBUG: lavacli: called with $*"
 # verify all devices and jobs are ok
 if [ "$1" = "health" ];then
 	FTMP='/tmp/jobs'

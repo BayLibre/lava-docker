@@ -170,6 +170,22 @@ jobs:
         run: cd output/local && docker compose up -d
       - name: Wait for LAVA 2023.10 to be started
         run: sh .github/workflows/wait-for-docker.sh
+      - name: Run backup of 2023.10
+        run: ./backup.sh
+      - name: stop docker
+        run: cd output/local && docker compose down
+      - name: Clean old install
+        run: rm -r output
+      - name: Copy backup
+        run: cp -v backup-latest/* lava-master/backup/
+      - name: Run lavalab-gen
+        run: ./lavalab-gen.py boards-ci.yaml
+      - name: Build lava-docker Last
+        run: cd output/local && docker compose build
+      - name: Launch lava-docker Last
+        run: cd output/local && docker compose up -d
+      - name: Wait for LAVA Last to be started
+        run: sh .github/workflows/wait-for-docker.sh
   test-backup:
     runs-on: ubuntu-latest
     steps:
