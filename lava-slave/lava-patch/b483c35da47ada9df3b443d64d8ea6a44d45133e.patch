@@ -1,0 +1,76 @@
+From b483c35da47ada9df3b443d64d8ea6a44d45133e Mon Sep 17 00:00:00 2001
+From: Igor Ponomarev <igor.ponomarev@collabora.com>
+Date: Fri, 12 Jun 2026 15:48:42 +0100
+Subject: [PATCH] Use namespace data instead of mutating action defition for
+ nbdroot
+
+Signed-off-by: Igor Ponomarev <igor.ponomarev@collabora.com>
+---
+ lava_dispatcher/actions/deploy/download.py | 10 ----------
+ lava_dispatcher/actions/deploy/nbd.py      | 15 +++++++++------
+ 2 files changed, 9 insertions(+), 16 deletions(-)
+
+diff --git a/lava_dispatcher/actions/deploy/download.py b/lava_dispatcher/actions/deploy/download.py
+index 8fdad8780..ce04aa66f 100644
+--- a/lava_dispatcher/actions/deploy/download.py
++++ b/lava_dispatcher/actions/deploy/download.py
+@@ -488,13 +488,6 @@ class DownloadHandler(Action):
+             else:
+                 raise JobError(f"{self.key!r} path prefix is required but not found")
+ 
+-        # xnbd protocol needs to know the location
+-        nbdroot = self.get_namespace_data(
+-            action="download-action", label="file", key="nbdroot"
+-        )
+-        if "lava-xnbd" in self.parameters and nbdroot:
+-            self.parameters["lava-xnbd"]["nbdroot"] = nbdroot
+-
+         self.results = {
+             "label": self.key,
+             "size": downloaded_size,
+@@ -1008,9 +1001,6 @@ class PreDownloadedAction(Action):
+             else:
+                 raise JobError(f"{self.key!r} path prefix is required but not found")
+ 
+-        if "lava-xnbd" in self.parameters and str(self.key) == "nbdroot":
+-            self.parameters["lava-xnbd"]["nbdroot"] = str(dest)
+-
+         return connection
+ 
+ 
+diff --git a/lava_dispatcher/actions/deploy/nbd.py b/lava_dispatcher/actions/deploy/nbd.py
+index 52677a13c..851149e50 100644
+--- a/lava_dispatcher/actions/deploy/nbd.py
++++ b/lava_dispatcher/actions/deploy/nbd.py
+@@ -122,10 +122,6 @@ class NbdAction(Action):
+             value=True,
+             parameters=parameters,
+         )
+-        # store in parameters for protocol 'xnbd' to tear-down nbd-server
+-        # and store in namespace for boot action
+-        # ip
+-        parameters["lava-xnbd"] = {}
+         # handle XnbdAction next - bring-up nbd-server
+         self.pipeline.add_action(XnbdAction(self.job))
+ 
+@@ -144,8 +140,15 @@ class XnbdAction(Action):
+     def run(self, connection, max_end_time):
+         connection = super().run(connection, max_end_time)
+         self.logger.debug("%s: starting nbd-server", self.name)
+-        # pull from parameters - as previously set
+-        self.nbd_root = self.parameters["lava-xnbd"]["nbdroot"]
++        # pull from namespace data - set by DownloaderAction
++        nbd_root: str = self.get_namespace_data(
++            action="download-action",
++            label="file",
++            key="nbdroot",
++        )
++        if nbd_root is None:
++            raise JobError("nbdroot was not downloaded")
++        self.nbd_root = nbd_root
+         self.nbd_server_port = self.get_namespace_data(
+             action="nbd-deploy", label="nbd", key="nbd_server_port"
+         )
+-- 
+GitLab
+
