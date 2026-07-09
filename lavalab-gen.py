@@ -431,7 +431,7 @@ def main():
             "arch",
             "bind_dev", "build_args",
             "custom_volumes",
-            "devices", "dispatcher_ip", "default_slave",
+            "devices", "dispatcher_ip", "default_slave", "dns",
             "extra_actions", "extra_hosts", "export_ser2net", "expose_ser2net", "expose_ports", "env",
             "host", "host_healthcheck",
             "joblimit", 
@@ -481,6 +481,12 @@ def main():
             dockcomp["services"][name]["build"]["args"] = slave['build_args']
         if "extra_hosts" in slave:
             dockcomp["services"][name]["extra_hosts"] = slave.get("extra_hosts")
+        if "dns" in slave:
+            dns = slave["dns"]
+            # accept either a single server or a list of servers
+            if not isinstance(dns, list):
+                dns = [dns]
+            dockcomp["services"][name]["dns"] = dns
         # insert here remote
 
         shutil.copytree("lava-slave", workerdir)
