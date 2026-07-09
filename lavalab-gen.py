@@ -157,6 +157,7 @@ def main():
         dockcomp["services"][name]["hostname"] = name
         dockcomp["services"][name]["ports"] = [ listen_address + ":" + str(webinterface_port) + ":80"]
         dockcomp["services"][name]["volumes"] = [ ]
+        dockcomp["services"][name]["restart"] = 'unless-stopped'
         dockcomp["services"][name]["build"] = {}
         dockcomp["services"][name]["build"]["context"] = name
         if "build_args" in master:
@@ -473,6 +474,7 @@ def main():
         dockcomp["services"][name]["ports"] = []
         dockcomp["services"][name]["volumes"] = [ ]
         dockcomp["services"][name]["environment"] = {}
+        dockcomp["services"][name]["restart"] = 'unless-stopped'
         dockcomp["services"][name]["build"] = {}
         dockcomp["services"][name]["build"]["context"] = name
         if "build_args" in slave:
