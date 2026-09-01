@@ -231,7 +231,7 @@ def main():
             lava_http_fqdn = worker["http_fqdn"]
             allowed_hosts_list.append('"%s"' % lava_http_fqdn)
         else:
-            lava_http_fqdn = "127.0.0.1"
+            lava_http_fqdn = "http://127.0.0.1"
         allowed_hosts_list.append('"%s"' % name)
         if "allowed_hosts" in worker:
             for allow_host in worker["allowed_hosts"]:
