@@ -748,7 +748,7 @@ def main():
             device_line += "{% set no_kvm = True %}\n"
         udevdir = None
         if "uart" in board:
-            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "ser2net_keepopen", "serial", "use_ser2net", "worker" ]
+            keywords_uart = [ "baud", "devpath", "env", "idproduct", "idvendor", "interfacenum", "port_number", "ser2net_keepopen", "serial", "use_ser2net", "worker" ]
             for keyword in board["uart"]:
                 if not keyword in keywords_uart:
                     print("WARNING: unknown keyword %s" % keyword)
@@ -769,6 +769,8 @@ def main():
                 udev_line += 'ATTRS{devpath}=="%s", ' % board["uart"]["devpath"]
             if "interfacenum" in uart:
                 udev_line += 'ENV{ID_USB_INTERFACE_NUM}=="%s", ' % board["uart"]["interfacenum"]
+            if "port_number" in uart:
+                udev_line += 'ENV{.ID_PORT}=="%s", ' % board["uart"]["port_number"]
             if "env" in uart:
                 for env in uart["env"]:
                     udev_line += 'ENV{%s}=="%s",' % (env, uart["env"][env])

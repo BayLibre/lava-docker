@@ -348,6 +348,7 @@ boards:
       baud:		(optional) Change the baud rate of the this uart (default is 115200)
       devpath: the UDEV devpath to this uart for UART without serial number
       interfacenum:	(optional) The interfacenumber of the serial. (Used with two serial in one device)
+      port_number:	(optional) The port_number of the serial. (Used with serial multiplexers)
       use_ser2net: 	True/False (Deprecated, ser2net is the default uart handler)
       worker:          (optional) an host/IP where ser2net is running
       ser2net_keepopen:	True/False (optional) Use the recent ser2net keepopen

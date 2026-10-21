@@ -1,4 +1,4 @@
-FROM lavasoftware/lava-dispatcher:2026.07
+FROM lavasoftware/lava-dispatcher:2026.10
 
 RUN if [ -e /etc/apt/sources.list.d/debian.sources ] ;then sed -i 's,.*bullseye-backports,#,' /etc/apt/sources.list.d/debian.sources ; fi
 RUN if [ -e /etc/apt/sources.list.d/backports.list ] ;then sed -i 's,.*bullseye-backports,#,' /etc/apt/sources.list.d/backports.list ; fi
